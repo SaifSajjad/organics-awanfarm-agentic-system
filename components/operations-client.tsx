@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Fuel, PackagePlus, ReceiptText, WalletCards } from "lucide-react";
 import { expenses as initialExpenses, orders as initialOrders } from "@/lib/demo-data";
 import { useLocalStorageState } from "@/lib/use-local-storage-state";
@@ -17,6 +17,34 @@ export function OperationsClient() {
   );
   const [expenseForm, setExpenseForm] = useState({ type: "Fuel", amount: "500", note: "" });
 
+  useEffect(() => {
+    let active = true;
+
+    async function loadDatabaseData() {
+      try {
+        const [ordersResponse, expensesResponse] = await Promise.all([
+          fetch("/api/orders", { cache: "no-store" }),
+          fetch("/api/expenses", { cache: "no-store" })
+        ]);
+
+        if (!active || !ordersResponse.ok || !expensesResponse.ok) return;
+
+        const dbOrders = (await ordersResponse.json()) as OrderRow[];
+        const dbExpenses = (await expensesResponse.json()) as ExpenseRow[];
+        if (dbOrders.length) setOrders(dbOrders);
+        if (dbExpenses.length) setExpenses(dbExpenses);
+      } catch {
+        // Keep localStorage/seed fallback when the database is not ready.
+      }
+    }
+
+    loadDatabaseData();
+
+    return () => {
+      active = false;
+    };
+  }, [setOrders, setExpenses]);
+
   const totals = useMemo(() => {
     const revenue = orders.reduce((sum, order) => sum + order.total, 0);
     const paid = orders
@@ -32,30 +60,60 @@ export function OperationsClient() {
     };
   }, [orders, expenses]);
 
-  function markPaid(id: string) {
+  async function markPaid(id: string) {
+    try {
+      await fetch(`/api/orders/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paymentStatus: "Paid" })
+      });
+    } catch {
+      // Keep localStorage fallback.
+    }
+
     setOrders((current) =>
       current.map((order) => (order.id === id ? { ...order, paymentStatus: "Paid" } : order))
     );
   }
 
-  function markDelivered(id: string) {
+  async function markDelivered(id: string) {
+    try {
+      await fetch(`/api/orders/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deliveryStatus: "Delivered" })
+      });
+    } catch {
+      // Keep localStorage fallback.
+    }
+
     setOrders((current) =>
       current.map((order) => (order.id === id ? { ...order, deliveryStatus: "Delivered" } : order))
     );
   }
 
-  function addExpense() {
+  async function addExpense() {
     const amount = Number(expenseForm.amount);
     if (!amount) return;
-    setExpenses((current) => [
-      {
-        id: `e-${Date.now()}`,
-        type: expenseForm.type,
-        amount,
-        note: expenseForm.note || "Demo expense"
-      },
-      ...current
-    ]);
+    let expense: ExpenseRow = {
+      id: `e-${Date.now()}`,
+      type: expenseForm.type,
+      amount,
+      note: expenseForm.note || "Demo expense"
+    };
+
+    try {
+      const response = await fetch("/api/expenses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(expense)
+      });
+      if (response.ok) expense = (await response.json()) as ExpenseRow;
+    } catch {
+      // Keep localStorage fallback.
+    }
+
+    setExpenses((current) => [expense, ...current]);
     setExpenseForm({ type: "Fuel", amount: "500", note: "" });
   }
 

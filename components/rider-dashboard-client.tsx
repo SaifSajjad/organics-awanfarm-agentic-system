@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2, MapPin, Phone, XCircle } from "lucide-react";
+import { useEffect } from "react";
 import { todayDeliveries } from "@/lib/demo-data";
 import { useLocalStorageState } from "@/lib/use-local-storage-state";
 
@@ -27,7 +28,38 @@ export function RiderDashboardClient() {
     seededDeliveries
   );
 
-  function updateStatus(id: string, status: "Delivered" | "Missed") {
+  useEffect(() => {
+    let active = true;
+
+    async function loadDatabaseDeliveries() {
+      try {
+        const response = await fetch("/api/deliveries", { cache: "no-store" });
+        if (!active || !response.ok) return;
+        const dbDeliveries = (await response.json()) as RiderDelivery[];
+        if (dbDeliveries.length) setDeliveries(dbDeliveries);
+      } catch {
+        // Keep localStorage/seed fallback when the database is not ready.
+      }
+    }
+
+    loadDatabaseDeliveries();
+
+    return () => {
+      active = false;
+    };
+  }, [setDeliveries]);
+
+  async function updateStatus(id: string, status: "Delivered" | "Missed") {
+    try {
+      await fetch(`/api/deliveries/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+    } catch {
+      // Keep localStorage fallback.
+    }
+
     setDeliveries((current) =>
       current.map((delivery) => (delivery.id === id ? { ...delivery, status } : delivery))
     );

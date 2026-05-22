@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -74,6 +74,35 @@ export function AdminDashboardClient() {
 
   const selectedProduct = products.find((product) => product.name === form.product) ?? products[0];
 
+  useEffect(() => {
+    let active = true;
+
+    async function loadDatabaseData() {
+      try {
+        const [customerResponse, deliveryResponse] = await Promise.all([
+          fetch("/api/customers", { cache: "no-store" }),
+          fetch("/api/deliveries", { cache: "no-store" })
+        ]);
+
+        if (!active || !customerResponse.ok || !deliveryResponse.ok) return;
+
+        const dbCustomers = (await customerResponse.json()) as CustomerRow[];
+        const dbDeliveries = (await deliveryResponse.json()) as DeliveryRow[];
+
+        if (dbCustomers.length) setCustomers(dbCustomers);
+        if (dbDeliveries.length) setDeliveries(dbDeliveries);
+      } catch {
+        // Keep localStorage/seed fallback when the database is not ready.
+      }
+    }
+
+    loadDatabaseData();
+
+    return () => {
+      active = false;
+    };
+  }, [setCustomers, setDeliveries]);
+
   const totals = useMemo(() => {
     const monthlyRevenue = customers.reduce((sum, customer) => sum + customer.quantity * customer.rate * 30, 0);
     const pending = customers.reduce((sum, customer) => sum + customer.pending, 0);
@@ -88,12 +117,12 @@ export function AdminDashboardClient() {
     };
   }, [customers, deliveries, expenses]);
 
-  function addCustomer() {
+  async function addCustomer() {
     if (!form.name.trim()) return;
 
     const quantity = Number(form.quantity) || 1;
     const monthlyCost = selectedProduct.price * quantity * 30;
-    const customer: CustomerRow = {
+    let customer: CustomerRow = {
       id: `c-${Date.now()}`,
       name: form.name.trim(),
       area: form.area,
@@ -106,12 +135,25 @@ export function AdminDashboardClient() {
       pending: monthlyCost
     };
 
+    try {
+      const response = await fetch("/api/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(customer)
+      });
+      if (response.ok) {
+        customer = (await response.json()) as CustomerRow;
+      }
+    } catch {
+      // Keep localStorage fallback.
+    }
+
     setCustomers((current) => [customer, ...current]);
     setForm((current) => ({ ...current, name: "", quantity: "1" }));
   }
 
-  function generateDeliveries() {
-    const generated = customers.map((customer) => ({
+  async function generateDeliveries() {
+    let generated: DeliveryRow[] = customers.map((customer) => ({
       id: `d-${customer.id}`,
       customer: customer.name,
       area: customer.area,
@@ -122,10 +164,30 @@ export function AdminDashboardClient() {
       status: "Pending"
     }));
 
+    try {
+      const response = await fetch("/api/deliveries", { method: "POST" });
+      if (response.ok) {
+        const dbDeliveries = (await response.json()) as DeliveryRow[];
+        if (dbDeliveries.length) generated = dbDeliveries;
+      }
+    } catch {
+      // Keep localStorage fallback.
+    }
+
     setDeliveries(generated);
   }
 
-  function markDelivered(id: string) {
+  async function markDelivered(id: string) {
+    try {
+      await fetch(`/api/deliveries/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "Delivered" })
+      });
+    } catch {
+      // Keep localStorage fallback.
+    }
+
     setDeliveries((current) =>
       current.map((delivery) => (delivery.id === id ? { ...delivery, status: "Delivered" } : delivery))
     );
