@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  role      String   @default("CUSTOMER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  customer Customer?
+  rider    Rider?
+}
+
+model Customer {
+  id            String         @id @default(cuid())
+  userId        String?        @unique
+  name          String
+  phone         String?
+  area          String
+  address       String
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  user          User?          @relation(fields: [userId], references: [id])
+  subscriptions Subscription[]
+  orders        Order[]
+  payments      Payment[]
+  complaints    Complaint[]
+}
+
+model Rider {
+  id         String     @id @default(cuid())
+  userId     String?    @unique
+  name       String
+  phone      String?
+  active     Boolean    @default(true)
+  user       User?      @relation(fields: [userId], references: [id])
+  deliveries Delivery[]
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  type        String
+  price       Int
+  unit        String      @default("liter")
+  active      Boolean     @default(true)
+  orderItems  OrderItem[]
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id          String             @id @default(cuid())
+  customerId  String
+  productId   String
+  type        String
+  status      String             @default("ACTIVE")
+  quantity    Float
+  rate        Int
+  days        String?
+  startDate   DateTime           @default(now())
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  customer    Customer           @relation(fields: [customerId], references: [id])
+  product     Product            @relation(fields: [productId], references: [id])
+  orders      Order[]
+}
+
+model Order {
+  id             String        @id @default(cuid())
+  customerId     String
+  subscriptionId String?
+  deliveryDate   DateTime
+  status         String         @default("PENDING")
+  totalAmount    Int
+  paymentStatus  String         @default("UNPAID")
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  customer       Customer       @relation(fields: [customerId], references: [id])
+  subscription   Subscription?  @relation(fields: [subscriptionId], references: [id])
+  items          OrderItem[]
+  delivery       Delivery?
+  payments       Payment[]
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Float
+  rate      Int
+  total     Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Delivery {
+  id        String         @id @default(cuid())
+  orderId   String         @unique
+  riderId   String?
+  area      String
+  status    String         @default("PENDING")
+  notes     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  order     Order          @relation(fields: [orderId], references: [id])
+  rider     Rider?         @relation(fields: [riderId], references: [id])
+}
+
+model Payment {
+  id         String        @id @default(cuid())
+  customerId String
+  orderId    String?
+  amount     Int
+  status     String        @default("PAID")
+  method     String        @default("Cash")
+  notes      String?
+  paidAt     DateTime      @default(now())
+  customer   Customer      @relation(fields: [customerId], references: [id])
+  order      Order?        @relation(fields: [orderId], references: [id])
+}
+
+model Expense {
+  id          String      @id @default(cuid())
+  type        String
+  amount      Int
+  description String?
+  spentAt     DateTime    @default(now())
+  createdAt   DateTime    @default(now())
+}
+
+model Complaint {
+  id         String   @id @default(cuid())
+  customerId String
+  subject    String
+  message    String
+  status     String   @default("Open")
+  createdAt  DateTime @default(now())
+  customer   Customer @relation(fields: [customerId], references: [id])
+}
+
+model AiConversation {
+  id        String   @id @default(cuid())
+  agent     String
+  prompt    String
+  response  String
+  createdAt DateTime @default(now())
+}
