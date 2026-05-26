@@ -1,0 +1,483 @@
+// Option B draft schema for Organics by Awan Farms.
+// This file is intentionally not the active Prisma schema.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+  RIDER
+  STAFF
+}
+
+enum ProductType {
+  COW_MILK
+  BUFFALO_MILK
+  BLEND
+  RICE
+  WHEAT
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+}
+
+enum SubscriptionFrequency {
+  DAILY
+  WEEKLY
+  CUSTOM_DAYS
+  ONE_TIME
+}
+
+enum DeliveryStatus {
+  PENDING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  MISSED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIAL
+  PAID
+}
+
+enum ExpenseType {
+  FUEL
+  RIDER
+  PACKAGING
+  MILK_PURCHASE
+  FARM_OPS
+  MISC
+}
+
+enum ComplaintStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum AiAgentRole {
+  CUSTOMER_SUPPORT
+  RIDER_ASSISTANT
+  ADMIN_ANALYST
+  FINANCE
+  INVENTORY
+  MARKETING
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(CUSTOMER)
+  phone        String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  customerProfile CustomerProfile?
+  riderProfile    RiderProfile?
+  createdExpenses Expense[]        @relation("ExpenseCreatedBy")
+  conversations   AiConversation[]
+  agentActions    AiAgentAction[]
+
+  @@index([role])
+  @@index([active])
+  @@map("users")
+}
+
+model CustomerProfile {
+  id          String   @id @default(cuid())
+  userId      String?  @unique
+  displayName String
+  phone       String
+  whatsapp    String?
+  notes       String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // A customer profile may exist before a login account is created.
+  user          User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  addresses     Address[]
+  subscriptions Subscription[]
+  orders        Order[]
+  payments      Payment[]
+  complaints    Complaint[]
+
+  @@index([phone])
+  @@index([active])
+  @@map("customer_profiles")
+}
+
+model RiderProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  displayName  String
+  phone        String
+  vehicleLabel String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routes     Route[]
+  deliveries Delivery[]
+
+  @@index([phone])
+  @@index([active])
+  @@map("rider_profiles")
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  customerId String
+  label      String?
+  line1      String
+  line2      String?
+  area       String
+  city       String   @default("Lahore")
+  landmark   String?
+  latitude   Float?
+  longitude  Float?
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  customer      CustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  subscriptions Subscription[]
+  orders        Order[]
+  deliveries    Delivery[]
+
+  @@index([customerId])
+  @@index([area])
+  @@index([city, area])
+  @@map("addresses")
+}
+
+model Product {
+  id        String      @id @default(cuid())
+  name      String
+  type      ProductType
+  unit      String      @default("liter")
+  price     Decimal     @db.Decimal(12, 2)
+  active    Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  subscriptions  Subscription[]
+  orderItems     OrderItem[]
+  inventoryLogs  InventoryLog[]
+  milkProduction MilkProduction[]
+
+  @@unique([type, name])
+  @@index([active])
+  @@map("products")
+}
+
+model Subscription {
+  id         String                @id @default(cuid())
+  customerId String
+  productId  String
+  addressId  String
+  status     SubscriptionStatus    @default(ACTIVE)
+  frequency  SubscriptionFrequency @default(DAILY)
+  quantity   Decimal               @db.Decimal(10, 2)
+  rate       Decimal               @db.Decimal(12, 2)
+  startDate  DateTime
+  endDate    DateTime?
+  pausedFrom DateTime?
+  pausedTo   DateTime?
+  notes      String?
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+
+  customer CustomerProfile       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product  Product               @relation(fields: [productId], references: [id], onDelete: Restrict)
+  address  Address               @relation(fields: [addressId], references: [id], onDelete: Restrict)
+  schedules SubscriptionSchedule[]
+  orders    Order[]
+
+  @@index([customerId])
+  @@index([productId])
+  @@index([addressId])
+  @@index([status])
+  @@index([frequency])
+  @@index([startDate])
+  @@map("subscriptions")
+}
+
+model SubscriptionSchedule {
+  id               String   @id @default(cuid())
+  subscriptionId   String
+  dayOfWeek        Int?
+  specificDate     DateTime?
+  quantityOverride Decimal? @db.Decimal(10, 2)
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Use dayOfWeek for recurring custom days and specificDate for one-off scheduled delivery.
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+  @@index([dayOfWeek])
+  @@index([specificDate])
+  @@index([active])
+  @@map("subscription_schedules")
+}
+
+model Order {
+  id            String        @id @default(cuid())
+  customerId    String
+  addressId     String?
+  subscriptionId String?
+  deliveryDate  DateTime
+  status        DeliveryStatus @default(PENDING)
+  paymentStatus PaymentStatus  @default(UNPAID)
+  subtotal      Decimal        @db.Decimal(12, 2)
+  discount      Decimal        @default(0) @db.Decimal(12, 2)
+  totalAmount   Decimal        @db.Decimal(12, 2)
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  customer     CustomerProfile @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  address      Address?        @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  subscription Subscription?   @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  items        OrderItem[]
+  delivery     Delivery?
+  payments     Payment[]
+  complaints   Complaint[]
+
+  @@index([customerId])
+  @@index([addressId])
+  @@index([subscriptionId])
+  @@index([deliveryDate])
+  @@index([status])
+  @@index([paymentStatus])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Decimal  @db.Decimal(10, 2)
+  rate      Decimal  @db.Decimal(12, 2)
+  total     Decimal  @db.Decimal(12, 2)
+  createdAt DateTime @default(now())
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model Delivery {
+  id               String         @id @default(cuid())
+  orderId          String         @unique
+  routeId          String?
+  riderId          String?
+  addressId        String?
+  status           DeliveryStatus @default(PENDING)
+  area             String
+  scheduledAt      DateTime
+  outForDeliveryAt DateTime?
+  deliveredAt      DateTime?
+  missedReason     String?
+  proofNote        String?
+  urduTranscript   String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  order   Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  route   Route?        @relation(fields: [routeId], references: [id], onDelete: SetNull)
+  rider   RiderProfile? @relation(fields: [riderId], references: [id], onDelete: SetNull)
+  address Address?      @relation(fields: [addressId], references: [id], onDelete: SetNull)
+
+  @@index([routeId])
+  @@index([riderId])
+  @@index([addressId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([area])
+  @@map("deliveries")
+}
+
+model Route {
+  id        String         @id @default(cuid())
+  riderId   String?
+  routeDate DateTime
+  area      String?
+  status    DeliveryStatus @default(PENDING)
+  notes     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  rider     RiderProfile? @relation(fields: [riderId], references: [id], onDelete: SetNull)
+  deliveries Delivery[]
+
+  @@index([riderId])
+  @@index([routeDate])
+  @@index([area])
+  @@index([status])
+  @@map("routes")
+}
+
+model Payment {
+  id         String        @id @default(cuid())
+  customerId String
+  orderId    String?
+  amount     Decimal       @db.Decimal(12, 2)
+  status     PaymentStatus @default(PAID)
+  method     String        @default("Cash")
+  reference  String?
+  notes      String?
+  paidAt     DateTime      @default(now())
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  customer CustomerProfile @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  order    Order?          @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([customerId])
+  @@index([orderId])
+  @@index([status])
+  @@index([paidAt])
+  @@map("payments")
+}
+
+model Expense {
+  id          String      @id @default(cuid())
+  type        ExpenseType
+  amount      Decimal     @db.Decimal(12, 2)
+  description String?
+  spentAt     DateTime    @default(now())
+  createdById String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  createdBy User? @relation("ExpenseCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([type])
+  @@index([spentAt])
+  @@index([createdById])
+  @@map("expenses")
+}
+
+model Complaint {
+  id         String          @id @default(cuid())
+  customerId String
+  orderId    String?
+  title      String
+  message    String
+  status     ComplaintStatus @default(OPEN)
+  resolution String?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  customer CustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  order    Order?          @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([customerId])
+  @@index([orderId])
+  @@index([status])
+  @@map("complaints")
+}
+
+model InventoryLog {
+  id        String   @id @default(cuid())
+  productId String?
+  quantity  Decimal  @db.Decimal(12, 2)
+  unit      String
+  direction String
+  reason    String
+  notes     String?
+  loggedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([productId])
+  @@index([direction])
+  @@index([loggedAt])
+  @@map("inventory_logs")
+}
+
+model MilkProduction {
+  id             String   @id @default(cuid())
+  productId      String?
+  productionDate DateTime
+  quantityLiters Decimal  @db.Decimal(12, 2)
+  source         String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([productId])
+  @@index([productionDate])
+  @@map("milk_production")
+}
+
+model AiConversation {
+  id        String      @id @default(cuid())
+  userId    String?
+  agentRole AiAgentRole
+  prompt    String
+  response  String
+  metadata  Json?
+  createdAt DateTime    @default(now())
+
+  user    User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  actions AiAgentAction[]
+
+  @@index([userId])
+  @@index([agentRole])
+  @@index([createdAt])
+  @@map("ai_conversations")
+}
+
+model AiAgentAction {
+  id             String      @id @default(cuid())
+  conversationId String?
+  userId         String?
+  agentRole      AiAgentRole
+  actionType     String
+  targetType     String?
+  targetId       String?
+  status         String      @default("PENDING")
+  payload        Json?
+  result         Json?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  conversation AiConversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  user         User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId])
+  @@index([userId])
+  @@index([agentRole])
+  @@index([status])
+  @@index([targetType, targetId])
+  @@map("ai_agent_actions")
+}
