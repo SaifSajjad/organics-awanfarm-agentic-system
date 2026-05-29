@@ -1,4 +1,5 @@
-// Option B active schema for Organics by Awan Farms.
+// Option B draft schema for Organics by Awan Farms.
+// This file is intentionally not the active Prisma schema.
 
 generator client {
   provider = "prisma-client-js"

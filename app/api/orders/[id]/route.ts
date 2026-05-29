@@ -1,23 +1,57 @@
+import { DeliveryStatus, PaymentStatus, Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { dbStatus, formatOrder } from "@/lib/db-formatters";
 import { prisma } from "@/lib/prisma";
 
+function parseDeliveryStatus(value: unknown) {
+  if (typeof value !== "string") return undefined;
+  const status = dbStatus(value);
+  if (Object.values(DeliveryStatus).includes(status as DeliveryStatus)) {
+    return status as DeliveryStatus;
+  }
+  return undefined;
+}
+
+function parsePaymentStatus(value: unknown) {
+  if (typeof value !== "string") return undefined;
+  const status = dbStatus(value);
+  if (Object.values(PaymentStatus).includes(status as PaymentStatus)) {
+    return status as PaymentStatus;
+  }
+  return undefined;
+}
+
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await request.json();
-  const data: { paymentStatus?: string; status?: string } = {};
+  const paymentStatus = parsePaymentStatus(body.paymentStatus);
+  const deliveryStatus = parseDeliveryStatus(body.deliveryStatus);
+  const data: Prisma.OrderUpdateInput = {};
 
-  if (body.paymentStatus) data.paymentStatus = dbStatus(body.paymentStatus);
-  if (body.deliveryStatus) data.status = dbStatus(body.deliveryStatus);
+  if (paymentStatus) data.paymentStatus = paymentStatus;
+  if (deliveryStatus) data.status = deliveryStatus;
+
+  if (!paymentStatus && !deliveryStatus) {
+    return NextResponse.json({ error: "No valid order update fields provided" }, { status: 400 });
+  }
 
   const order = await prisma.order.update({
     where: { id },
     data,
-    include: { customer: true, items: { include: { product: true } } }
+    include: {
+      customer: true,
+      address: true,
+      items: { include: { product: true } },
+      delivery: true,
+      payments: true
+    }
   });
 
-  if (data.status) {
-    await prisma.delivery.updateMany({ where: { orderId: id }, data: { status: data.status } });
+  if (deliveryStatus) {
+    await prisma.delivery.updateMany({
+      where: { orderId: id },
+      data: { status: deliveryStatus }
+    });
   }
 
   return NextResponse.json(formatOrder(order));
