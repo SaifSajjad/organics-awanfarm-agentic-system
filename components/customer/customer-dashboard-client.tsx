@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   AlertCircle,
   BellRing,
@@ -139,6 +140,10 @@ export function CustomerDashboardClient() {
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div className="space-y-6">
+            <div className="customer-reveal">
+              <TodaysDeliveryCard />
+            </div>
+
             <div className="customer-reveal">
               <SubscriptionCard onDemoAction={setDemoMessage} />
             </div>
@@ -308,6 +313,53 @@ export function CustomerDashboardClient() {
       />
       <FarmSupportAssistant isOpen={assistantOpen} onOpenChange={setAssistantOpen} />
     </main>
+  );
+}
+
+function TodaysDeliveryCard() {
+  return (
+    <section aria-labelledby="todays-delivery-title" className="customer-card overflow-hidden p-5 sm:p-6">
+      <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div>
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="font-label text-xs font-bold uppercase tracking-[0.18em] text-farm-ink/50">Live tracking</p>
+            <span className="inline-flex min-h-9 items-center gap-2 rounded-full bg-farm-heritage px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-white">
+              <Truck className="h-4 w-4 text-farm-gold" aria-hidden="true" />
+              On Route
+            </span>
+          </div>
+          <h2 id="todays-delivery-title" className="mt-3 font-display text-3xl font-bold text-farm-heritage">
+            Today&apos;s Delivery
+          </h2>
+          <div className="mt-4 grid gap-3 text-sm leading-6 text-farm-ink/70 sm:grid-cols-2">
+            <p className="rounded-2xl bg-farm-cream px-4 py-3">
+              <span className="block text-xs font-bold uppercase tracking-[0.14em] text-farm-ink/50">Status</span>
+              <span className="mt-1 block font-black text-farm-heritage">On Route</span>
+            </p>
+            <p className="rounded-2xl bg-farm-cream px-4 py-3">
+              <span className="block text-xs font-bold uppercase tracking-[0.14em] text-farm-ink/50">Expected window</span>
+              <span className="mt-1 block font-black text-farm-heritage">6:00 AM &ndash; 7:30 AM</span>
+            </p>
+          </div>
+          <p className="mt-4 text-base font-semibold text-farm-heritage">Ali is completing nearby deliveries.</p>
+          <p className="mt-2 text-sm text-farm-ink/60">Updated 2 minutes ago</p>
+          <p className="mt-3 text-sm text-farm-ink/60">Apni delivery ka status check karein.</p>
+        </div>
+
+        <div className="rounded-3xl border border-farm-heritage/10 bg-white p-4 shadow-soft-card lg:w-72">
+          <div className="flex items-center gap-3 rounded-2xl bg-farm-meadow p-4">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-farm-gold/25 text-farm-heritage">
+              <Clock3 className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <p className="text-sm font-semibold leading-6 text-farm-ink/70">Track your morning delivery securely.</p>
+          </div>
+          <Link href="/track/demo" className="customer-primary-cta mt-4">
+            <Truck className="h-5 w-5" aria-hidden="true" />
+            Track My Delivery
+          </Link>
+        </div>
+      </div>
+    </section>
   );
 }
 
