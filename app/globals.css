@@ -303,6 +303,81 @@ a {
   .customer-typing-dots span:nth-child(3) {
     animation-delay: 240ms;
   }
+
+  .tracking-card {
+    border: 1px solid rgba(14, 36, 25, 0.1);
+    border-radius: 1.5rem;
+    box-shadow: 0 12px 32px rgba(14, 36, 25, 0.06);
+  }
+
+  .tracking-reveal {
+    animation: tracking-card-up 420ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  .tracking-primary-button,
+  .tracking-secondary-button,
+  .tracking-whatsapp-button {
+    transition:
+      transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1),
+      background-color 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .tracking-primary-button {
+    background: #0e2419;
+    color: #ffffff;
+    box-shadow: 0 16px 42px rgba(14, 36, 25, 0.16);
+  }
+
+  .tracking-secondary-button {
+    border: 1px solid rgba(14, 36, 25, 0.14);
+    background: rgba(255, 255, 255, 0.92);
+    color: #0e2419;
+  }
+
+  .tracking-whatsapp-button {
+    background: #22c55e;
+    box-shadow: 0 16px 42px rgba(34, 197, 94, 0.22);
+  }
+
+  .tracking-primary-button:hover,
+  .tracking-secondary-button:hover,
+  .tracking-whatsapp-button:hover {
+    transform: translateY(-1px);
+  }
+
+  .tracking-primary-button:active,
+  .tracking-secondary-button:active,
+  .tracking-whatsapp-button:active {
+    transform: scale(0.98);
+  }
+
+  .tracking-skeleton {
+    background: linear-gradient(
+      90deg,
+      rgba(229, 227, 215, 0.92) 0%,
+      rgba(253, 252, 247, 0.96) 48%,
+      rgba(229, 227, 215, 0.92) 100%
+    );
+    background-size: 720px 100%;
+    animation: tracking-shimmer 1.55s ease-in-out infinite;
+  }
+
+  .tracking-on-route-pulse {
+    animation: tracking-green-pulse 2.4s ease-in-out infinite;
+  }
+
+  .tracking-amber-pulse {
+    animation: tracking-amber-pulse 2.8s ease-out infinite;
+  }
+
+  .tracking-check-reveal {
+    animation: tracking-check-reveal 420ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  .tracking-missed-fade {
+    animation: tracking-missed-fade 360ms ease-out both;
+  }
 }
 
 @keyframes customer-sheet-up {
@@ -366,6 +441,70 @@ a {
   }
 }
 
+@keyframes tracking-card-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tracking-shimmer {
+  0% {
+    background-position: -360px 0;
+  }
+  100% {
+    background-position: 360px 0;
+  }
+}
+
+@keyframes tracking-green-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(171, 207, 184, 0.38);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(171, 207, 184, 0);
+  }
+}
+
+@keyframes tracking-amber-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.28);
+  }
+  50% {
+    box-shadow: 0 0 0 14px rgba(245, 158, 11, 0);
+  }
+}
+
+@keyframes tracking-check-reveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.75);
+  }
+  65% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tracking-missed-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (min-width: 768px) {
   .customer-drawer-panel {
     inset-block: 0;
@@ -411,5 +550,9 @@ a {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .tracking-skeleton {
+    animation: none !important;
   }
 }
