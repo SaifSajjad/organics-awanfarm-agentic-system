@@ -137,18 +137,18 @@ export function RouteDispatchSummary({ onCopyNote }: AdminDashboardSectionsProps
         </p>
       </div>
 
-      <div className="mt-5 grid gap-4 lg:grid-cols-3">
+      <div className="mt-5 grid gap-4 lg:grid-cols-[repeat(3,minmax(0,1fr))]">
         {routeSummaries.map((route) => {
           const reviewRequired = route.status === "Review required";
           return (
-            <article key={route.title} className="rounded-3xl border border-farm-heritage/10 bg-white p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
+            <article key={route.title} className="min-w-0 rounded-3xl border border-farm-heritage/10 bg-white p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
                   <h3 className="font-bold text-farm-heritage">{route.title}</h3>
                   <p className="mt-2 text-sm text-farm-ink/65">Rider: {route.rider}</p>
                 </div>
                 <span
-                  className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.1em] ${
+                  className={`max-w-full shrink-0 rounded-full px-3 py-1 text-center text-xs font-bold uppercase leading-5 tracking-[0.1em] sm:max-w-[9.5rem] ${
                     reviewRequired ? "bg-farm-warning/15 text-amber-800" : "bg-green-100 text-green-800"
                   }`}
                 >
@@ -191,7 +191,7 @@ export function QuickActions({ onFocusSection }: AdminDashboardSectionsProps) {
         </div>
         <PackageCheck className="h-6 w-6 text-farm-gold" aria-hidden="true" />
       </div>
-      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="mt-5 grid gap-3 sm:grid-cols-[repeat(auto-fit,minmax(170px,1fr))]">
         {quickActions.map((action, index) => {
           const Icon = icons[index] ?? ClipboardList;
           return (
@@ -199,13 +199,13 @@ export function QuickActions({ onFocusSection }: AdminDashboardSectionsProps) {
               key={action.label}
               type="button"
               onClick={() => onFocusSection(action.section)}
-              className="admin-erp-card group min-h-32 p-4 text-left transition-transform hover:-translate-y-1 active:scale-[0.99]"
+              className="admin-erp-card group flex min-h-32 min-w-0 flex-col p-4 text-left transition-transform hover:-translate-y-1 active:scale-[0.99]"
             >
               <span className="grid h-11 w-11 place-items-center rounded-2xl bg-farm-cream text-farm-heritage group-hover:bg-farm-heritage group-hover:text-white">
                 <Icon className="h-5 w-5" aria-hidden="true" />
               </span>
-              <span className="mt-4 block font-bold text-farm-heritage">{action.label}</span>
-              <span className="mt-1 block text-sm text-farm-ink/60">Focus section only</span>
+              <span className="mt-4 block min-w-0 font-bold leading-6 text-farm-heritage">{action.label}</span>
+              <span className="mt-1 block min-w-0 text-sm leading-5 text-farm-ink/60">Focus section only</span>
             </button>
           );
         })}
