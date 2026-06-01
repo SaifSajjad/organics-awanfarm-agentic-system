@@ -30,26 +30,26 @@ export function AdminAgentStrip({ onFocusSection, onOpenAgent }: AdminAgentStrip
         </div>
       </div>
 
-      <div className="mt-5 flex snap-x gap-3 overflow-x-auto pb-2 lg:grid lg:grid-cols-5 lg:overflow-visible lg:pb-0">
+      <div className="mt-5 flex snap-x gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-[repeat(auto-fit,minmax(200px,1fr))] md:overflow-visible md:pb-0">
         {operationalAgents.map((agent) => {
           const Icon = icons[agent.id as keyof typeof icons] ?? Headphones;
           return (
             <article
               key={agent.id}
-              className="admin-erp-card min-w-[78vw] snap-start p-4 sm:min-w-[18rem] lg:min-w-0"
+              className="admin-erp-card flex min-h-[230px] min-w-[78vw] snap-start flex-col p-4 sm:min-w-[18rem] md:min-w-0"
             >
               <span className="grid h-11 w-11 place-items-center rounded-2xl bg-farm-cream text-farm-heritage">
                 <Icon className="h-5 w-5" aria-hidden="true" />
               </span>
-              <h3 className="mt-4 min-h-12 font-bold leading-6 text-farm-heritage">{agent.title}</h3>
-              <p className="mt-2 min-h-10 text-sm leading-5 text-farm-ink/65">{agent.summary}</p>
+              <h3 className="mt-4 min-w-0 font-bold leading-6 text-farm-heritage">{agent.title}</h3>
+              <p className="mt-2 min-w-0 text-sm leading-5 text-farm-ink/65">{agent.summary}</p>
               <button
                 type="button"
                 onClick={() => {
                   if ("mode" in agent && agent.mode) onOpenAgent(agent.mode as AdminAgentMode);
                   if ("section" in agent && agent.section) onFocusSection(agent.section as AdminSectionId);
                 }}
-                className="admin-erp-secondary mt-4 w-full"
+                className="admin-erp-secondary mt-auto w-full"
               >
                 {agent.cta}
               </button>

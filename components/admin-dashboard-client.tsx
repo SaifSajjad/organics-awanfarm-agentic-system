@@ -95,12 +95,12 @@ export function AdminDashboardClient({ initialAgent, initialAgentState }: AdminD
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-farm-meadow text-farm-ink">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 bg-farm-heritage px-5 py-6 text-white shadow-premium lg:block">
-        <div>
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col overflow-y-auto bg-farm-heritage px-5 py-6 text-white shadow-premium lg:flex">
+        <div className="shrink-0">
           <p className="font-display text-2xl font-bold text-farm-gold">Organics by Awan Farms</p>
           <p className="mt-2 text-sm leading-6 text-white/65">Admin ERP Control Center</p>
         </div>
-        <nav aria-label="Admin dashboard" className="mt-10 space-y-2">
+        <nav aria-label="Admin dashboard" className="mt-10 shrink-0 space-y-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -116,7 +116,7 @@ export function AdminDashboardClient({ initialAgent, initialAgentState }: AdminD
             );
           })}
         </nav>
-        <div className="absolute bottom-6 left-5 right-5 rounded-3xl border border-white/10 bg-white/10 p-4">
+        <div className="mt-8 rounded-3xl border border-white/10 bg-white/10 p-4">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-farm-gold">Safety rule</p>
           <p className="mt-2 text-sm leading-6 text-white/70">
             Agent recommends - admin reviews - workflow drawer opens - admin confirms later.
@@ -131,7 +131,7 @@ export function AdminDashboardClient({ initialAgent, initialAgentState }: AdminD
           tabIndex={-1}
           className="sticky top-0 z-30 border-b border-farm-heritage/10 bg-farm-meadow/92 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8"
         >
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+          <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4">
             <div>
               <p className="font-label text-xs font-bold uppercase tracking-[0.18em] text-farm-ink/50">
                 Admin ERP Control Center
@@ -162,7 +162,7 @@ export function AdminDashboardClient({ initialAgent, initialAgentState }: AdminD
             </button>
           </div>
           {mobileNavOpen ? (
-            <nav id="admin-mobile-nav" aria-label="Admin mobile navigation" className="mx-auto mt-4 grid max-w-7xl gap-2 sm:grid-cols-2 lg:hidden">
+            <nav id="admin-mobile-nav" aria-label="Admin mobile navigation" className="mx-auto mt-4 grid max-w-[1500px] gap-2 sm:grid-cols-2 lg:hidden">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -181,7 +181,7 @@ export function AdminDashboardClient({ initialAgent, initialAgentState }: AdminD
           ) : null}
         </header>
 
-        <main className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <main className="mx-auto max-w-[1500px] space-y-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           <section className="admin-erp-reveal rounded-[2rem] bg-farm-heritage p-6 text-white shadow-premium sm:p-8">
             <div className="grid gap-6 xl:grid-cols-[1fr_auto] xl:items-end">
               <div>
@@ -206,29 +206,29 @@ export function AdminDashboardClient({ initialAgent, initialAgentState }: AdminD
 
           <KpiStrip />
 
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]">
-            <div className="space-y-6">
-              <div ref={registerSection("priority")}>
-                <PriorityActionQueue {...sharedSectionProps} />
-              </div>
-              <div ref={registerSection("dispatch")}>
-                <RouteDispatchSummary {...sharedSectionProps} />
-              </div>
-              <div ref={registerSection("agents")}>
-                <AdminAgentStrip onFocusSection={focusSection} onOpenAgent={openAgent} />
-              </div>
-              <QuickActions {...sharedSectionProps} />
+          <div ref={registerSection("priority")}>
+            <PriorityActionQueue {...sharedSectionProps} />
+          </div>
+
+          <div ref={registerSection("dispatch")}>
+            <RouteDispatchSummary {...sharedSectionProps} />
+          </div>
+
+          <div ref={registerSection("agents")}>
+            <AdminAgentStrip onFocusSection={focusSection} onOpenAgent={openAgent} />
+          </div>
+
+          <QuickActions {...sharedSectionProps} />
+
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,0.92fr)_minmax(340px,0.8fr)]">
+            <div ref={registerSection("finance")} className="min-w-0">
+              <FinanceSnapshot />
             </div>
-            <div className="space-y-6">
-              <div ref={registerSection("finance")}>
-                <FinanceSnapshot />
-              </div>
-              <div ref={registerSection("inventory")}>
-                <InventorySnapshot />
-              </div>
-              <div ref={registerSection("support")}>
-                <RecentActivity {...sharedSectionProps} />
-              </div>
+            <div ref={registerSection("inventory")} className="min-w-0">
+              <InventorySnapshot />
+            </div>
+            <div ref={registerSection("support")} className="min-w-0">
+              <RecentActivity {...sharedSectionProps} />
             </div>
           </div>
         </main>
