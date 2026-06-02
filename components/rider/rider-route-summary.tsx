@@ -31,19 +31,19 @@ export function RiderRouteSummary({ mode, items }: RiderRouteSummaryProps) {
   const statItems = items.filter((item) => !cueItems.includes(item));
 
   return (
-    <section className="rounded-2xl border border-[#d8d5ca] bg-white p-5 shadow-[0_4px_20px_rgba(27,67,50,0.06)] sm:p-6">
-      <div className="flex items-center gap-3">
-        <ClipboardList className="h-6 w-6 text-[#012d1d]" aria-hidden="true" />
-        <h2 className="font-display text-2xl font-black text-[#012d1d]">Today’s Route</h2>
+    <section className="rounded-2xl border border-[#d8d5ca] bg-white p-4 shadow-[0_4px_18px_rgba(27,67,50,0.05)] sm:p-5">
+      <div className="flex items-center gap-2.5">
+        <ClipboardList className="h-5 w-5 text-[#012d1d]" aria-hidden="true" />
+        <h2 className="font-display text-[1.7rem] font-black leading-tight text-[#012d1d]">Today’s Route</h2>
       </div>
 
-      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
         {statItems.map((item) => {
           const Icon = iconByLabel[item.label] ?? ClipboardList;
 
           return (
-            <div key={item.label} className="rounded-xl border border-[#e4e2dd] bg-[#fbf9f4] p-4">
-              <p className="flex items-center gap-2 text-xs font-black tracking-[0.08em] text-[#717973]">
+            <div key={item.label} className="rounded-xl border border-[#e4e2dd] bg-[#fbf9f4] p-3">
+              <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs font-black tracking-[0.04em] text-[#717973]">
                 <Icon className="h-4 w-4" aria-hidden="true" />
                 <span>{item.label}</span>
                 <span aria-hidden="true">—</span>
@@ -51,7 +51,7 @@ export function RiderRouteSummary({ mode, items }: RiderRouteSummaryProps) {
               </p>
               <p
                 aria-hidden="true"
-                className={`mt-2 font-display text-3xl font-black leading-none ${toneClass(item.tone)}`}
+                className={`mt-2 font-display text-[2rem] font-black leading-none ${toneClass(item.tone)}`}
               >
                 {item.value}
               </p>
@@ -60,7 +60,7 @@ export function RiderRouteSummary({ mode, items }: RiderRouteSummaryProps) {
         })}
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-3 flex flex-wrap gap-2">
         {cueItems.map((item) => {
           const Icon = iconByLabel[item.label] ?? ClipboardList;
           const label = mode === "before" ? `${item.value} ${item.label}` : `${item.label} — ${item.value}`;
@@ -68,7 +68,7 @@ export function RiderRouteSummary({ mode, items }: RiderRouteSummaryProps) {
           return (
             <span
               key={item.label}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#c1c8c2] bg-[#f5f3ee] px-3 text-sm font-black text-[#1b1c19]"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#c1c8c2] bg-[#f5f3ee] px-3 text-sm font-black text-[#1b1c19]"
             >
               <Icon className="h-4 w-4 text-[#012d1d]" aria-hidden="true" />
               {label}
