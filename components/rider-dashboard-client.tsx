@@ -102,8 +102,8 @@ export function RiderDashboardClient({ initialDemoState }: RiderDashboardClientP
   }, []);
 
   const renderBeforeRoute = () => (
-    <div className="grid gap-7 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start">
-      <div className="grid gap-5">
+    <div className="grid gap-5 lg:grid-cols-[minmax(360px,0.92fr)_minmax(0,1.08fr)] lg:items-start xl:gap-6">
+      <div className="grid gap-4">
         <RiderRouteSummary
           mode="before"
           items={[
@@ -118,7 +118,7 @@ export function RiderDashboardClient({ initialDemoState }: RiderDashboardClientP
         <button
           type="button"
           onClick={openActiveRoute}
-          className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-[#1b4332] px-4 text-base font-black text-white shadow-[0_14px_34px_rgba(27,67,50,0.15)]"
+          className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-[#1b4332] px-4 text-base font-black text-white shadow-[0_10px_24px_rgba(27,67,50,0.14)]"
         >
           <Play className="h-5 w-5" aria-hidden="true" />
           Start Route
@@ -135,8 +135,8 @@ export function RiderDashboardClient({ initialDemoState }: RiderDashboardClientP
   );
 
   const renderActiveRoute = () => (
-    <div className="grid gap-7 lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] lg:items-start">
-      <div className="grid gap-5">
+    <div className="grid gap-5 lg:grid-cols-[minmax(390px,0.95fr)_minmax(0,1.05fr)] lg:items-start xl:gap-6">
+      <div className="grid gap-4">
         <RiderRouteSummary
           mode="active"
           items={[
@@ -178,7 +178,7 @@ export function RiderDashboardClient({ initialDemoState }: RiderDashboardClientP
   }
 
   return (
-    <div className="mx-auto grid w-full max-w-5xl gap-7">
+    <div className="mx-auto grid w-full gap-5 lg:gap-6">
       <RiderHeader />
       {body}
       {demoState === "stop-detail" ? (

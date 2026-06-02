@@ -24,33 +24,33 @@ function cueClass(cue: RiderCue) {
 
 export function RiderRouteList({ title, description, stops, footer, onViewAll }: RiderRouteListProps) {
   return (
-    <section className="space-y-4">
+    <section className="space-y-3">
       <div>
-        <h2 className="font-display text-2xl font-black text-[#012d1d]">{title}</h2>
+        <h2 className="font-display text-[1.7rem] font-black leading-tight text-[#012d1d]">{title}</h2>
         {description ? <p className="mt-1 text-base leading-6 text-[#414844]">{description}</p> : null}
       </div>
 
-      <div className="grid gap-3">
+      <div className="grid gap-2.5">
         {stops.map((stop) => (
           <article
             key={stop.sequence}
-            className={`rounded-2xl border bg-white p-4 shadow-[0_4px_20px_rgba(27,67,50,0.04)] ${
+            className={`rounded-2xl border bg-white p-3.5 shadow-[0_4px_18px_rgba(27,67,50,0.04)] sm:p-4 ${
               stop.status === "Active" ? "border-[#012d1d]" : stop.status === "Missed" ? "border-[#ffb4ab]" : "border-[#e4e2dd]"
             }`}
           >
-            <div className="grid grid-cols-[2rem_1fr_auto] gap-3">
+            <div className="grid grid-cols-[1.75rem_1fr_auto] gap-2.5 sm:grid-cols-[2rem_1fr_auto] sm:gap-3">
               <span className="pt-1 text-sm font-black text-[#717973]">{stop.sequence}</span>
               <div className="min-w-0">
-                <h3 className="break-words text-lg font-semibold leading-6 text-[#1b1c19]">
+                <h3 className="break-words text-base font-semibold leading-6 text-[#1b1c19] sm:text-lg">
                   {stop.initials} — {stop.area}
                 </h3>
-                <p className="mt-1 text-sm font-black leading-5 text-[#012d1d]">{stop.order}</p>
+                <p className="mt-0.5 text-sm font-black leading-5 text-[#012d1d]">{stop.order}</p>
                 {stop.cues.length > 0 ? (
-                  <div className="mt-2 flex flex-wrap gap-2">
+                  <div className="mt-2 flex flex-wrap gap-1.5">
                     {stop.cues.map((cue) => (
                       <span
                         key={cue}
-                        className={`rounded-lg border px-2 py-1 text-xs font-black leading-none ${cueClass(cue)}`}
+                        className={`rounded-lg border px-2 py-1 text-[11px] font-black leading-none ${cueClass(cue)}`}
                       >
                         {cue}
                       </span>
@@ -59,7 +59,7 @@ export function RiderRouteList({ title, description, stops, footer, onViewAll }:
                 ) : null}
               </div>
               <span
-                className={`inline-flex h-8 items-center rounded-lg border px-2 text-xs font-black ${statusClass(
+                className={`inline-flex h-7 items-center rounded-lg border px-2 text-[11px] font-black ${statusClass(
                   stop.status
                 )}`}
               >

@@ -7,27 +7,27 @@ type RiderRouteCompleteProps = {
 
 export function RiderRouteComplete({ onReturnHome }: RiderRouteCompleteProps) {
   return (
-    <section className="mx-auto grid max-w-2xl gap-8">
+    <section className="mx-auto grid max-w-2xl gap-6">
       <div className="text-center">
-        <div className="mx-auto grid h-24 w-24 place-items-center rounded-full border-4 border-[#1b4332] text-[#1b4332]">
-          <CheckCircle2 className="h-12 w-12" aria-hidden="true" />
+        <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border-4 border-[#1b4332] text-[#1b4332] sm:h-24 sm:w-24">
+          <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12" aria-hidden="true" />
         </div>
-        <p className="mt-6 text-sm font-black tracking-[0.16em] text-[#924c00]">Today’s Route</p>
-        <h2 className="mt-2 font-display text-4xl font-black text-[#012d1d]">Route Complete</h2>
-        <p className="mx-auto mt-4 max-w-lg text-xl leading-8 text-[#414844]">
+        <p className="mt-5 text-sm font-black tracking-[0.16em] text-[#924c00]">Today’s Route</p>
+        <h2 className="mt-2 font-display text-3xl font-black text-[#012d1d] sm:text-4xl">Route Complete</h2>
+        <p className="mx-auto mt-3 max-w-lg text-lg leading-8 text-[#414844] sm:text-xl">
           {RIDER_ROUTE_META.routeName} has been completed for this demo.
         </p>
       </div>
 
       <section>
-        <h3 className="font-display text-3xl font-black text-[#012d1d]">Route Summary</h3>
+        <h3 className="font-display text-[1.7rem] font-black text-[#012d1d] sm:text-3xl">Route Summary</h3>
         <div className="mt-5 overflow-hidden rounded-2xl border border-[#c1c8c2] bg-white">
           {routeCompleteSummary.map(([label, value]) => (
             <div
               key={label}
-              className="grid grid-cols-[1fr_auto] items-center gap-4 border-b border-[#c1c8c2] px-5 py-5 last:border-b-0"
+              className="grid grid-cols-[1fr_auto] items-center gap-4 border-b border-[#c1c8c2] px-4 py-4 last:border-b-0 sm:px-5"
             >
-              <p className="flex items-center gap-3 text-lg font-semibold text-[#1b1c19]">
+              <p className="flex items-center gap-3 text-base font-semibold text-[#1b1c19] sm:text-lg">
                 <ListChecks className="h-5 w-5 text-[#012d1d]" aria-hidden="true" />
                 {label}
               </p>
