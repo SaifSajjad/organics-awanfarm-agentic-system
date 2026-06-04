@@ -9,15 +9,17 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  role      String   @default("CUSTOMER")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  role         String   @default("CUSTOMER")
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  customer Customer?
-  rider    Rider?
+  customer    Customer?
+  rider       Rider?
+  auditEvents AuditEvent[]
 }
 
 model Customer {
@@ -45,34 +47,35 @@ model Rider {
   active     Boolean    @default(true)
   user       User?      @relation(fields: [userId], references: [id])
   deliveries Delivery[]
+  routes     Route[]
 }
 
 model Product {
-  id          String      @id @default(cuid())
-  name        String
-  type        String
-  price       Int
-  unit        String      @default("liter")
-  active      Boolean     @default(true)
-  orderItems  OrderItem[]
+  id            String         @id @default(cuid())
+  name          String
+  type          String
+  price         Int
+  unit          String         @default("liter")
+  active        Boolean        @default(true)
+  orderItems    OrderItem[]
   subscriptions Subscription[]
 }
 
 model Subscription {
-  id          String             @id @default(cuid())
-  customerId  String
-  productId   String
-  type        String
-  status      String             @default("ACTIVE")
-  quantity    Float
-  rate        Int
-  days        String?
-  startDate   DateTime           @default(now())
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  customer    Customer           @relation(fields: [customerId], references: [id])
-  product     Product            @relation(fields: [productId], references: [id])
-  orders      Order[]
+  id         String   @id @default(cuid())
+  customerId String
+  productId  String
+  type       String
+  status     String   @default("ACTIVE")
+  quantity   Float
+  rate       Int
+  days       String?
+  startDate  DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  customer   Customer @relation(fields: [customerId], references: [id])
+  product    Product  @relation(fields: [productId], references: [id])
+  orders     Order[]
 }
 
 model Order {
@@ -80,13 +83,13 @@ model Order {
   customerId     String
   subscriptionId String?
   deliveryDate   DateTime
-  status         String         @default("PENDING")
+  status         String        @default("PENDING")
   totalAmount    Int
-  paymentStatus  String         @default("UNPAID")
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  customer       Customer       @relation(fields: [customerId], references: [id])
-  subscription   Subscription?  @relation(fields: [subscriptionId], references: [id])
+  paymentStatus  String        @default("UNPAID")
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  customer       Customer      @relation(fields: [customerId], references: [id])
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
   items          OrderItem[]
   delivery       Delivery?
   payments       Payment[]
@@ -104,38 +107,40 @@ model OrderItem {
 }
 
 model Delivery {
-  id        String         @id @default(cuid())
-  orderId   String         @unique
-  riderId   String?
-  area      String
-  status    String         @default("PENDING")
-  notes     String?
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  order     Order          @relation(fields: [orderId], references: [id])
-  rider     Rider?         @relation(fields: [riderId], references: [id])
+  id             String          @id @default(cuid())
+  orderId        String          @unique
+  riderId        String?
+  area           String
+  status         String          @default("PENDING")
+  notes          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  order          Order           @relation(fields: [orderId], references: [id])
+  rider          Rider?          @relation(fields: [riderId], references: [id])
+  routeStop      RouteStop?
+  trackingTokens TrackingToken[]
 }
 
 model Payment {
-  id         String        @id @default(cuid())
+  id         String   @id @default(cuid())
   customerId String
   orderId    String?
   amount     Int
-  status     String        @default("PAID")
-  method     String        @default("Cash")
+  status     String   @default("PAID")
+  method     String   @default("Cash")
   notes      String?
-  paidAt     DateTime      @default(now())
-  customer   Customer      @relation(fields: [customerId], references: [id])
-  order      Order?        @relation(fields: [orderId], references: [id])
+  paidAt     DateTime @default(now())
+  customer   Customer @relation(fields: [customerId], references: [id])
+  order      Order?   @relation(fields: [orderId], references: [id])
 }
 
 model Expense {
-  id          String      @id @default(cuid())
+  id          String   @id @default(cuid())
   type        String
   amount      Int
   description String?
-  spentAt     DateTime    @default(now())
-  createdAt   DateTime    @default(now())
+  spentAt     DateTime @default(now())
+  createdAt   DateTime @default(now())
 }
 
 model Complaint {
@@ -154,4 +159,114 @@ model AiConversation {
   prompt    String
   response  String
   createdAt DateTime @default(now())
+}
+
+model Route {
+  id          String      @id @default(cuid())
+  riderId     String
+  status      RouteStatus @default(ASSIGNED)
+  assignedAt  DateTime    @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  rider       Rider       @relation(fields: [riderId], references: [id])
+  stops       RouteStop[]
+
+  @@index([riderId, status])
+}
+
+model RouteStop {
+  id            String            @id @default(cuid())
+  routeId       String
+  deliveryId    String?           @unique
+  sequence      Int
+  status        RouteStopStatus   @default(PENDING)
+  activeAt      DateTime?
+  deliveredAt   DateTime?
+  missedAt      DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  route         Route             @relation(fields: [routeId], references: [id])
+  delivery      Delivery?         @relation(fields: [deliveryId], references: [id])
+  attempts      DeliveryAttempt[]
+  trackingToken TrackingToken?
+
+  @@unique([routeId, sequence])
+  @@index([routeId, status])
+}
+
+model DeliveryAttempt {
+  id            String              @id @default(cuid())
+  routeStopId   String
+  reason        MissedAttemptReason
+  riderNote     String?
+  adminNote     String?
+  callAttempted Boolean             @default(false)
+  reviewedAt    DateTime?
+  createdAt     DateTime            @default(now())
+  routeStop     RouteStop           @relation(fields: [routeStopId], references: [id])
+
+  @@index([routeStopId, createdAt])
+}
+
+model TrackingToken {
+  id          String     @id @default(cuid())
+  tokenHash   String     @unique
+  deliveryId  String?
+  routeStopId String?    @unique
+  expiresAt   DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime   @default(now())
+  delivery    Delivery?  @relation(fields: [deliveryId], references: [id])
+  routeStop   RouteStop? @relation(fields: [routeStopId], references: [id])
+
+  @@index([deliveryId])
+}
+
+model AuditEvent {
+  id             String         @id @default(cuid())
+  actorUserId    String?
+  eventType      AuditEventType
+  targetEntity   String
+  targetEntityId String
+  metadata       Json?
+  createdAt      DateTime       @default(now())
+  actor          User?          @relation(fields: [actorUserId], references: [id])
+
+  @@index([actorUserId])
+  @@index([eventType, createdAt])
+  @@index([targetEntity, targetEntityId])
+}
+
+enum RouteStatus {
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum RouteStopStatus {
+  PENDING
+  ACTIVE
+  DELIVERED
+  MISSED
+}
+
+enum MissedAttemptReason {
+  CUSTOMER_UNAVAILABLE
+  ACCESS_ISSUE
+  ADDRESS_ISSUE
+  CUSTOMER_REQUESTED_LATER_DELIVERY
+  PAYMENT_ISSUE
+  OTHER
+}
+
+enum AuditEventType {
+  ROUTE_ASSIGNED
+  ROUTE_STARTED
+  STOP_DELIVERED
+  MISSED_SUBMITTED
+  MISSED_REVIEWED
+  ADMIN_CORRECTION
+  ROUTE_COMPLETED
 }
