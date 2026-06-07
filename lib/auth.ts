@@ -4,6 +4,20 @@ import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/password";
 
+export type DashboardRole = "RIDER" | "ADMIN" | "CUSTOMER";
+
+const dashboardRoles = new Set<DashboardRole>(["RIDER", "ADMIN", "CUSTOMER"]);
+
+export function normalizeUserRole(role: string | null | undefined): DashboardRole | null {
+  const normalizedRole = role?.trim().toUpperCase();
+
+  if (!normalizedRole || !dashboardRoles.has(normalizedRole as DashboardRole)) {
+    return null;
+  }
+
+  return normalizedRole as DashboardRole;
+}
+
 function readCredential(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
@@ -47,11 +61,17 @@ export const authConfig = {
           return null;
         }
 
+        const role = normalizeUserRole(user.role);
+
+        if (!role) {
+          return null;
+        }
+
         return {
           id: user.id,
           name: user.name,
           email: user.email,
-          role: user.role
+          role
         };
       }
     })
@@ -60,7 +80,7 @@ export const authConfig = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role;
+        token.role = normalizeUserRole(user.role) ?? "";
       }
 
       return token;
@@ -68,7 +88,8 @@ export const authConfig = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = typeof token.id === "string" ? token.id : token.sub ?? "";
-        session.user.role = typeof token.role === "string" ? token.role : "";
+        session.user.role =
+          typeof token.role === "string" ? normalizeUserRole(token.role) ?? "" : "";
       }
 
       return session;

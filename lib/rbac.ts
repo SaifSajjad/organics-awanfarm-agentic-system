@@ -1,11 +1,11 @@
-import { auth } from "@/lib/auth";
+import { type DashboardRole, auth, normalizeUserRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export type AuthenticatedUser = {
   id: string;
   name?: string | null;
   email?: string | null;
-  role: string;
+  role: DashboardRole;
 };
 
 export type AuthenticatedRider = AuthenticatedUser & {
@@ -27,7 +27,9 @@ export async function requireAuthenticatedUser(): Promise<AuthenticatedUser> {
   const session = await auth();
   const user = session?.user;
 
-  if (!user?.id || !user.role) {
+  const role = normalizeUserRole(user?.role);
+
+  if (!user?.id || !role) {
     throw new AuthzError("UNAUTHENTICATED", "Authentication is required.", 401);
   }
 
@@ -35,13 +37,17 @@ export async function requireAuthenticatedUser(): Promise<AuthenticatedUser> {
     id: user.id,
     name: user.name,
     email: user.email,
-    role: user.role
+    role
   };
 }
 
 export async function requireRole(role: string | string[]): Promise<AuthenticatedUser> {
   const user = await requireAuthenticatedUser();
-  const allowedRoles = Array.isArray(role) ? role : [role];
+  const allowedRoles = (Array.isArray(role) ? role : [role])
+    .map((allowedRole) => normalizeUserRole(allowedRole))
+    .filter((allowedRole): allowedRole is NonNullable<typeof allowedRole> =>
+      Boolean(allowedRole)
+    );
 
   if (!allowedRoles.includes(user.role)) {
     throw new AuthzError("FORBIDDEN", "The signed-in user is not allowed here.", 403);
