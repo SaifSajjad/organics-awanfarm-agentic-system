@@ -42,9 +42,9 @@ export function AdminCreateRiderForm() {
   }
 
   return (
-    <section className="w-full max-w-sm rounded-lg border border-[#e3d8c3] bg-[#fffdf8]/95 p-4 text-[#2d1a0f] shadow-sm backdrop-blur">
-      <h2 className="text-base font-semibold">Create Rider Account</h2>
-      <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+    <section className="admin-erp-reveal w-full rounded-3xl border border-farm-heritage/10 bg-white p-4 text-farm-ink shadow-soft-card sm:p-5">
+      <h2 className="font-display text-xl font-bold text-farm-heritage">Create Rider Account</h2>
+      <form onSubmit={handleSubmit} className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <div className="space-y-1.5">
           <label htmlFor="rider-name" className="block text-xs font-semibold text-[#4a2f1b]">
             Rider Name
@@ -104,9 +104,9 @@ export function AdminCreateRiderForm() {
           />
         </div>
 
-        {error ? <p className="text-xs font-medium text-[#9f2f24]">{error}</p> : null}
+        {error ? <p className="text-xs font-medium text-[#9f2f24] md:col-span-2 xl:col-span-4">{error}</p> : null}
         {success ? (
-          <p className="text-xs font-medium text-[#2f6b3d]">
+          <p className="text-xs font-medium text-[#2f6b3d] md:col-span-2 xl:col-span-4">
             Rider account created.
           </p>
         ) : null}
@@ -114,7 +114,7 @@ export function AdminCreateRiderForm() {
         <button
           type="submit"
           disabled={pending}
-          className="w-full rounded-lg bg-[#5b351c] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#432715] disabled:cursor-not-allowed disabled:opacity-70"
+          className="min-h-10 w-full rounded-lg bg-[#5b351c] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#432715] disabled:cursor-not-allowed disabled:opacity-70 md:col-span-2 xl:col-span-4 xl:max-w-xs"
         >
           Create Rider
         </button>

@@ -27,6 +27,7 @@ import {
   RecentActivity,
   RouteDispatchSummary
 } from "@/components/admin/admin-dashboard-sections";
+import { AdminCreateRiderForm } from "@/components/admin/admin-create-rider-form";
 import { AdminWorkflowDrawer } from "@/components/admin/admin-workflow-drawer";
 
 type AdminDashboardClientProps = {
@@ -219,6 +220,8 @@ export function AdminDashboardClient({ initialAgent, initialAgentState }: AdminD
           </div>
 
           <QuickActions {...sharedSectionProps} />
+
+          <AdminCreateRiderForm />
 
           <div className="grid gap-6 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,0.92fr)_minmax(340px,0.8fr)]">
             <div ref={registerSection("finance")} className="min-w-0">
