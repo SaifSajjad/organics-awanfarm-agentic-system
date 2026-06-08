@@ -1,3 +1,4 @@
+import { AdminCreateRiderForm } from "@/components/admin/admin-create-rider-form";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { AdminDashboardClient } from "@/components/admin-dashboard-client";
 import { normalizeAdminAgent, normalizeAdminAgentState } from "@/components/admin/admin-agent-types";
@@ -18,6 +19,9 @@ export default async function AdminDashboardPage({ searchParams }: AdminDashboar
     <>
       <div className="fixed right-4 top-4 z-50 sm:right-6 sm:top-5">
         <SignOutButton />
+      </div>
+      <div className="fixed bottom-4 left-4 z-40 w-[calc(100vw-2rem)] max-w-sm sm:bottom-6 sm:left-6">
+        <AdminCreateRiderForm />
       </div>
       <AdminDashboardClient initialAgent={initialAgent} initialAgentState={initialAgentState} />
     </>

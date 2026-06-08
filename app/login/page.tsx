@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 import { LoginForm } from "@/components/auth/login-form";
 import { auth } from "@/lib/auth";
@@ -34,6 +35,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <p className="text-sm text-[#6f5a45]">Sign in to continue</p>
           </div>
           <LoginForm />
+          <p className="mt-6 text-center text-sm text-[#6f5a45]">
+            <Link href="/signup" className="font-semibold text-[#5b351c] hover:underline">
+              Create customer account
+            </Link>
+          </p>
         </div>
       </section>
     </main>
